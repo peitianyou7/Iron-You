@@ -7,7 +7,50 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main class="app">
+    <section id="login-page" class="login-page">
+      <form id="login-form" class="login-card">
+        <div class="header">
+          <p class="eyebrow">Welcome</p>
+          <h1>留学顾问助手</h1>
+          <p>AI 辅助咨询分析与跟进管理工具</p>
+        </div>
+
+        <label>
+          用户名
+          <input name="username" autocomplete="username" placeholder="请输入用户名" />
+        </label>
+
+        <label>
+          密码
+          <input name="password" type="password" autocomplete="current-password" placeholder="请输入密码" />
+        </label>
+
+        <fieldset class="role-field">
+          <legend>身份选择</legend>
+          <label class="role-option">
+            <input type="radio" name="role" value="consultant" checked />
+            <span>顾问</span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="supervisor" />
+            <span>顾问主管</span>
+          </label>
+        </fieldset>
+
+        <p id="login-error" class="login-error hidden">请输入用户名和密码。</p>
+        <button type="submit">登录</button>
+      </form>
+    </section>
+
+    <main id="app-page" class="app hidden">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Signed in</p>
+          <p id="current-user" class="current-user">当前用户：-｜身份：-</p>
+        </div>
+        <button id="logout-button" type="button" class="logout-button">退出登录</button>
+      </header>
+
       <section class="panel form-panel">
         <div class="header">
           <p class="eyebrow">MVP Demo</p>
