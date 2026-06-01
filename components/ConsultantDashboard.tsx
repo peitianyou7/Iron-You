@@ -43,7 +43,13 @@ const consultantTabs: ConsultantTab[] = [
   },
 ];
 
-export default function ConsultantDashboard() {
+type ConsultantDashboardProps = {
+  onCreateStudent: () => void;
+};
+
+export default function ConsultantDashboard({
+  onCreateStudent,
+}: ConsultantDashboardProps) {
   const [activeTab, setActiveTab] = useState<ConsultantTabKey>("students");
 
   const activeTabInfo = consultantTabs.find((tab) => tab.key === activeTab);
@@ -110,7 +116,9 @@ export default function ConsultantDashboard() {
 
           {activeTab === "students" && <MyStudentsPlaceholder />}
 
-          {activeTab === "addStudent" && <AddStudentPlaceholder />}
+          {activeTab === "addStudent" && (
+            <AddStudentPlaceholder onCreateStudent={onCreateStudent} />
+          )}
 
           {activeTab === "followToday" && <TodayFollowPlaceholder />}
 
@@ -155,7 +163,11 @@ function MyStudentsPlaceholder() {
   );
 }
 
-function AddStudentPlaceholder() {
+function AddStudentPlaceholder({
+  onCreateStudent,
+}: {
+  onCreateStudent: () => void;
+}) {
   return (
     <div className="rounded-xl bg-slate-50 p-4">
       <h4 className="font-semibold text-slate-900">新增学生</h4>
@@ -163,7 +175,11 @@ function AddStudentPlaceholder() {
         后续这里将放置学生信息录入表单，包括基础信息、当前学历、语言成绩、意向国家、预算、时间规划和备注。
       </p>
 
-      <button className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+      <button
+        type="button"
+        onClick={onCreateStudent}
+        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+      >
         新建学生档案
       </button>
     </div>

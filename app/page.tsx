@@ -56,6 +56,9 @@ const defaultProfile: StudentProfile = {
 export default function HomePage() {
   const [user, setUser] = useState<StoredUser | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [consultantView, setConsultantView] = useState<"dashboard" | "analysis">(
+    "dashboard",
+  );
 
   useEffect(() => {
     setUser(getStoredUser());
@@ -65,11 +68,13 @@ export default function HomePage() {
   function handleLogin(nextUser: StoredUser) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
     setUser(nextUser);
+    setConsultantView("dashboard");
   }
 
   function handleLogout() {
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
+    setConsultantView("dashboard");
   }
 
   if (!hasHydrated) {
@@ -98,11 +103,20 @@ export default function HomePage() {
         </button>
       </header>
 
-      {user.role === "consultant" ? (
-        <ConsultantDashboard />
-      ) : (
-        <SupervisorWorkspace user={user} />
+      {user.role === "consultant" && consultantView === "dashboard" && (
+        <ConsultantDashboard
+          onCreateStudent={() => setConsultantView("analysis")}
+        />
       )}
+
+      {user.role === "consultant" && consultantView === "analysis" && (
+        <AnalysisWorkspace
+          user={user}
+          onBack={() => setConsultantView("dashboard")}
+        />
+      )}
+
+      {user.role === "supervisor" && <AnalysisWorkspace user={user} />}
     </main>
   );
 }
@@ -192,7 +206,13 @@ function LoginPage({ onLogin }: { onLogin: (user: StoredUser) => void }) {
   );
 }
 
-function SupervisorWorkspace({ user }: { user: StoredUser }) {
+function AnalysisWorkspace({
+  user,
+  onBack,
+}: {
+  user: StoredUser;
+  onBack?: () => void;
+}) {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [status, setStatus] = useState<"待分析" | "分析中" | "已完成" | "失败">(
     "待分析",
@@ -203,9 +223,22 @@ function SupervisorWorkspace({ user }: { user: StoredUser }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(360px,520px)_1fr]">
+    <div className="grid gap-4">
+      {onBack && (
+        <div>
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+          >
+            返回顾问工作台
+          </button>
+        </div>
+      )}
+      <div className="grid gap-6 lg:grid-cols-[minmax(360px,520px)_1fr]">
       <StudentFormPanel setResult={setResult} status={status} setStatus={setStatus} />
       <AnalysisPanel result={result} status={status} />
+      </div>
     </div>
   );
 }
