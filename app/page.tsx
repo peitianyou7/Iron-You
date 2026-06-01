@@ -31,8 +31,8 @@ type AnalysisResult = {
   missingInfo?: string[];
   riskPoints?: RiskPoint[];
   recommendations?: string[];
+  followUpQuestions?: string[];
   consultationMemo?: string;
-  nextSteps?: string[];
 };
 
 const STORAGE_KEY = "studyAdvisorUser";
@@ -357,6 +357,35 @@ function AnalysisPanel({
   result: AnalysisResult | null;
   status: "待分析" | "分析中" | "已完成" | "失败";
 }) {
+  const [followUpPlan, setFollowUpPlan] = useState("");
+  const [planStatus, setPlanStatus] = useState("");
+  const [copyStatus, setCopyStatus] = useState("");
+
+  async function handleCopyMemo() {
+    const memo = result?.consultationMemo || "";
+    if (!memo) {
+      setCopyStatus("暂无内容");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(memo);
+      setCopyStatus("已复制");
+    } catch {
+      setCopyStatus("复制失败");
+    }
+  }
+
+  function handleSubmitPlan(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!followUpPlan.trim()) {
+      setPlanStatus("请先填写跟进计划");
+      return;
+    }
+
+    setPlanStatus("已提交，等待主管审核");
+  }
+
   return (
     <section className="min-h-[calc(100vh-144px)] rounded-lg border border-slate-200 bg-white p-6 shadow-lg">
       <div className="mb-5 flex items-start justify-between gap-4">
@@ -378,15 +407,62 @@ function AnalysisPanel({
       ) : (
         <div className="grid gap-4">
           <ResultSection title="缺失信息" items={result.missingInfo} />
+          <ResultSection
+            title="AI建议面咨补问问题"
+            items={result.followUpQuestions}
+          />
           <RiskSection risks={result.riskPoints} />
           <ResultSection title="初步建议方向" items={result.recommendations} />
           <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-2 font-bold text-slate-900">咨询纪要</h3>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <h3 className="font-bold text-slate-900">咨询纪要</h3>
+              <div className="flex items-center gap-2">
+                {copyStatus && (
+                  <span className="text-xs font-semibold text-slate-500">
+                    {copyStatus}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleCopyMemo}
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  一键复制
+                </button>
+              </div>
+            </div>
             <p className="leading-7 text-slate-700">
               {result.consultationMemo || "暂无咨询纪要。"}
             </p>
           </article>
-          <ResultSection title="下一步跟进建议" items={result.nextSteps} />
+          <article className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-2 font-bold text-slate-900">下一步跟进计划</h3>
+            <p className="mb-3 text-sm leading-6 text-slate-500">
+              顾问可根据 AI 分析结果自行编辑跟进计划。提交后，后续将由主管审核跟进措施是否可行并返回给顾问。
+            </p>
+            <form onSubmit={handleSubmitPlan} className="grid gap-3">
+              <textarea
+                value={followUpPlan}
+                onChange={(event) => {
+                  setFollowUpPlan(event.target.value);
+                  setPlanStatus("");
+                }}
+                placeholder="请输入下一步跟进计划，例如：明天下午微信补问预算和目标院校；本周内预约一次家长面咨；确认语言考试计划和材料清单。"
+                className="min-h-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500"
+              />
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-sm font-semibold text-slate-500">
+                  {planStatus || "提交后进入主管审核流程"}
+                </span>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+                >
+                  提交跟进计划
+                </button>
+              </div>
+            </form>
+          </article>
         </div>
       )}
     </section>
