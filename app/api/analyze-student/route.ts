@@ -1,25 +1,27 @@
-module.exports = async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+import { NextResponse } from "next/server";
 
+export async function POST(request: Request) {
   try {
-    const result = await analyzeStudent(req.body || {});
-    return res.status(200).json(result);
+    const profile = await request.json();
+    const result = await analyzeStudent(profile);
+    return NextResponse.json(result);
   } catch (error) {
-    return res.status(500).json({
-      error: error.message || "Server error",
-    });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Server error" },
+      { status: 500 },
+    );
   }
-};
+}
 
-async function analyzeStudent(profile) {
+async function analyzeStudent(profile: unknown) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   const baseUrl = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com";
   const model = process.env.DEEPSEEK_MODEL || "deepseek-chat";
 
   if (!apiKey) {
-    throw new Error("Missing DEEPSEEK_API_KEY. Add it in Vercel Project Settings > Environment Variables.");
+    throw new Error(
+      "Missing DEEPSEEK_API_KEY. Add it in Vercel Project Settings > Environment Variables.",
+    );
   }
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
